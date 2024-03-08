@@ -63,12 +63,13 @@
 
 <form action="/upload" method="post" enctype="multipart/form-data">
     <p>Transcript:</p>
-    <textarea name="transcript" rows="4" cols="50"></textarea>
+    <textarea name="transcript" rows="4" cols="50">{{ recognized_text|default('', true) }}</textarea>
     <div class="file-upload-wrapper">
         <input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="Upload" name="submit">
     </div>
 </form>
+
 
 </body>
 </html>

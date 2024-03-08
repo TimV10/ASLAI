@@ -2,7 +2,7 @@ import speech_recognition as sr
 
 r = sr.Recognizer()
 
-with sr.AudioFile('AudioSample.wav') as source:
+with sr.AudioFile('hello_audio.wav') as source:
     
     audio_text = r.listen(source)
     
