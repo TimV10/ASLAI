@@ -1,73 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Transcript UI</title>
-<style>
-  body {
-    display: flex;
-    margin: 0;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  .left-section, .right-section {
-    flex: 1;
-    padding: 20px;
-  }
-  .image-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-gap: 10px;
-  }
-  .image-grid img {
-    width: 100%;
-    height: auto;
-  }
-  .video-upload-input {
-    margin-bottom: 20px;
-  }
-  .transcript-area {
-    border: 1px solid #ccc;
-    height: 300px;
-    padding: 10px;
-    overflow-y: auto;
-    margin-bottom: 20px; /* Add margin for spacing before the button */
-  }
-  .upload-video-btn {
-    display: block; /* Makes the button centered if desired */
-    width: 100%; /* Adjust as necessary, or remove for auto width */
-    padding: 10px; /* Makes the button larger and easier to click */
-    background-color: #007bff; /* Bootstrap primary button color for example */
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px; /* Optional for rounded corners */
-  }
-  .upload-video-btn:hover {
-    background-color: #0056b3; /* Darker shade for hover effect */
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improved UI</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .left-section, form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .left-section {
+            background-color: #f0f0f0; /* Light grey background for contrast */
+        }
+        form {
+            background-color: #e6e6ff; /* Light blue background for visual separation */
+            border-left: 2px solid #ccc; /* Adds a subtle border between sections */
+        }
+        textarea {
+            width: 80%; /* Increase the width */
+            height: 500px; /* Increase the height */
+            margin-bottom: 20px; /* Adds space below the textarea */
+        }
+        .file-upload-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px; /* Space between file input and submit button */
+            margin-bottom: 20px; /* Adds space below the file input and submit button */
+        }
+        input[type="file"] {
+            cursor: pointer;
+        }
+        input[type="submit"] {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
 
 <div class="left-section">
-  <div class="image-grid" style="border: 5px solid black ; height: 500px">
-    <!-- Images will be inserted here dynamically -->
-  </div>
-</div>
-
-<div class="right-section">
-  <input type="file" class="video-upload-input">
-  <div class="transcript-area">
-    <!-- Transcript text will appear here -->
-  </div>
-  <button class="upload-video-btn">Upload Video</button>
+    <!-- Content for the left section goes here -->
+    <p>Left section content...</p>
 </div>
 
 <form action="/upload" method="post" enctype="multipart/form-data">
-  <input type="file" name="video_file" class="video-upload-input" accept="video/*">
-  <button type="submit" class="upload-video-btn">Upload Video</button>
+    <p>Transcript:</p>
+    <textarea name="transcript" rows="4" cols="50"></textarea>
+    <div class="file-upload-wrapper">
+        <input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="submit" value="Upload" name="submit">
+    </div>
 </form>
 
 </body>
