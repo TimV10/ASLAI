@@ -18,6 +18,7 @@ def allowed_file(filename):
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    recognized_text = ""
     if 'fileToUpload' not in request.files:
         flash('No file part')
         return redirect(request.url)
@@ -38,12 +39,15 @@ def upload_file():
                 # Using Google speech recognition
                 text = r.recognize_google(audio_text)
                 print('Converting audio transcripts into text...')
-                # Instead of printing and flashing, pass the text to the template
-                return render_template('index.html', recognized_text=text)
+                print(text)
+                recognized_text = text  # Store the recognized text
+
             except Exception as e:
                 print(e)
                 flash('Could not process audio file. Please try again.')
-                return redirect(url_for('index'))
+
+        return render_template('index.html',
+                               recognized_text=recognized_text)  # Pass the recognized text to the template
     else:
         flash('Invalid file type.')
         return redirect(request.url)
