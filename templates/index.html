@@ -55,7 +55,7 @@
 .record-button {
     cursor: pointer;
     border: none;
-    background: url('button/start.jpeg') no-repeat center center;
+    background: url('../static/button/start.jpeg') no-repeat center center;
     width: 50px; /* Adjust based on your image size */
     height: 50px; /* Adjust based on your image size */
     background-size: contain; /* This ensures the image covers the button area without stretching */
@@ -88,14 +88,14 @@
     <div class="file-upload-wrapper">
         <input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="Upload" name="submit">
-<button type="button" id="recordButton" class="record-button"></button>
+<button type="button" id="recordButton" class="record-button" data-start-img="{{ url_for('static', filename='button/start.jpeg') }}" data-stop-img="{{ url_for('static', filename='button/stop.jpeg') }}"></button>
+
     </div>
 </form>
 
 <script>
     let mediaRecorder;
     let audioChunks = [];
-
 document.getElementById("recordButton").addEventListener("click", () => {
     const recordButton = document.getElementById("recordButton");
 
@@ -107,7 +107,7 @@ document.getElementById("recordButton").addEventListener("click", () => {
                     audioChunks.push(event.data);
                 };
                 mediaRecorder.start();
-                recordButton.style.backgroundImage = "url('button/stop.jpeg')"; // Change to stop image
+                recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/stop.jpeg') }}')";
             })
             .catch(console.error);
     } else if (mediaRecorder.state === "recording") {
@@ -130,10 +130,11 @@ document.getElementById("recordButton").addEventListener("click", () => {
                     console.error('Error:', error);
                 });
         };
-        recordButton.style.backgroundImage = "url('button/start.jpeg')"; // Change back to start image
+        recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/start.jpeg') }}')";
         audioChunks = [];
     }
 });
+
 
 </script>
 
