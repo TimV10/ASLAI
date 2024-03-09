@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,9 @@
             height: 100vh;
             font-family: Arial, sans-serif;
         }
-        .left-section, form {
+
+        .left-section,
+        form {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -19,28 +22,42 @@
             align-items: center;
             padding: 20px;
         }
+
         .left-section {
-            background-color: #f0f0f0; /* Light grey background for contrast */
+            background-color: #f0f0f0;
+            /* Light grey background for contrast */
         }
+
         form {
-            background-color: #e6e6ff; /* Light blue background for visual separation */
-            border-left: 2px solid #ccc; /* Adds a subtle border between sections */
+            background-color: #e6e6ff;
+            /* Light blue background for visual separation */
+            border-left: 2px solid #ccc;
+            /* Adds a subtle border between sections */
         }
+
         textarea {
-            width: 80%; /* Increase the width */
-            height: 500px; /* Increase the height */
-            margin-bottom: 20px; /* Adds space below the textarea */
+            width: 80%;
+            /* Increase the width */
+            height: 500px;
+            /* Increase the height */
+            margin-bottom: 20px;
+            /* Adds space below the textarea */
         }
+
         .file-upload-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px; /* Space between file input and submit button */
-            margin-bottom: 20px; /* Adds space below the file input and submit button */
+            gap: 20px;
+            /* Space between file input and submit button */
+            margin-bottom: 20px;
+            /* Adds space below the file input and submit button */
         }
+
         input[type="file"] {
             cursor: pointer;
         }
+
         input[type="submit"] {
             cursor: pointer;
             padding: 10px 20px;
@@ -49,117 +66,133 @@
             border: none;
             border-radius: 5px;
         }
+
         input[type="submit"]:hover {
             background-color: #45a049;
         }
-.record-button {
-    cursor: pointer;
-    border: none;
-    background: url('../static/button/start.webp') no-repeat center center;
-    width: 50px; /* Adjust based on your image size */
-    height: 50px; /* Adjust based on your image size */
-    background-size: contain; /* This ensures the image covers the button area without stretching */
-}
+
+        .record-button {
+            cursor: pointer;
+            border: none;
+            background: url('../static/button/start.webp') no-repeat center center;
+            width: 50px;
+            /* Adjust based on your image size */
+            height: 50px;
+            /* Adjust based on your image size */
+            background-size: contain;
+            /* This ensures the image covers the button area without stretching */
+        }
 
 
-.record-button:hover {
-    background-color: #45a049; /* Darker shade when hovered */
-}
+        .record-button:hover {
+            background-color: #45a049;
+            /* Darker shade when hovered */
+        }
 
-.recording {
-    background-color: #FF6347; /* Red color to indicate recording */
-}
+        .recording {
+            background-color: #FF6347;
+            /* Red color to indicate recording */
+        }
 
-.recording:hover {
-    background-color: #FF4500; /* Darker red when hovered during recording */
-}
+        .recording:hover {
+            background-color: #FF4500;
+            /* Darker red when hovered during recording */
+        }
     </style>
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+
 </head>
+
 <body>
 
-<div class="left-section">
-    <!-- Content for the left section goes here -->
-    <p>Left section content...</p>
-<video width="320" height="240" controls autoplay muted>
-    <source src="{{ url_for('static', filename='signs/candy.mp4') }}" type="video/mp4">
-    Your browser does not support the video tag.
-</video>
-</div>
-
-
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <p>Transcript:</p>
-    <textarea name="transcript" rows="4" cols="50">{{ recognized_text|default('', true) }}</textarea>
-    <div class="file-upload-wrapper">
-        <input type="file" name="fileToUpload" id="fileToUpload">
-        <input type="submit" value="Upload" name="submit">
-<button type="button" id="recordButton" class="record-button" data-start-img="{{ url_for('static', filename='button/start.jpeg') }}" data-stop-img="{{ url_for('static', filename='button/stop.jpeg') }}"></button>
+    <div class="left-section">
+        <!-- Content for the left section goes here -->
+        <p>Left section content...</p>
+        <video width="320" height="240" controls autoplay muted>
+            <source src="{{ url_for('static', filename='signs/candy.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
     </div>
-</form>
-
-<script>
-    // Check for browser support
-    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (window.SpeechRecognition) {
-        let recognition = new SpeechRecognition();
-        recognition.lang = 'en-US'; // Set the language
-        recognition.interimResults = true; // Whether you want interim results
-        recognition.continuous = true; // Keep listening or stop after a pause
-
-        const transcriptArea = document.querySelector('textarea[name="transcript"]');
-        const recordButton = document.getElementById("recordButton");
-        let isRecording = false;
-
-        recognition.addEventListener('result', event => {
-            const transcript = Array.from(event.results)
-                .map(result => result[0])
-                .map(result => result.transcript)
-                .join('');
-
-            transcriptArea.value = transcript; // Update the textarea with the transcript
-        });
-
-        recordButton.addEventListener("click", () => {
-            if (!isRecording) {
-                transcriptArea.value = ""
-                recognition.start();
-                isRecording = true;
-                recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/stop.webp') }}')";
-            } else {
-                recognition.stop();
-                isRecording = false;
-                recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/start.webp') }}')";
-            }
-        });
-
-recognition.addEventListener('end', () => {
-    if (isRecording) {
-        recognition.start(); // Restart recognition if still recording
-    } else {
-        const transcriptText = transcriptArea.value;
-        fetch('/save_transcript', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ transcript: transcriptText }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    }
-});
 
 
-    } else {
-        console.error("Speech Recognition API is not supported in this browser.");
-    }
-</script>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <p>Transcript:</p>
+        <label id="database"></label>
+        <textarea name="transcript" rows="4" cols="50">{{ recognized_text|default('', true) }}</textarea>
+        <div class="file-upload-wrapper">
+            <input type="file" name="fileToUpload" id="fileToUpload">
+            <input type="submit" value="Upload" name="submit">
+            <button type="button" id="recordButton" class="record-button"
+                data-start-img="{{ url_for('static', filename='button/start.jpeg') }}"
+                data-stop-img="{{ url_for('static', filename='button/stop.jpeg') }}"></button>
+        </div>
+    </form>
+
+    <script>
+        // Check for browser support
+        window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (window.SpeechRecognition) {
+            let recognition = new SpeechRecognition();
+            recognition.lang = 'en-US'; // Set the language
+            recognition.interimResults = true; // Whether you want interim results
+            recognition.continuous = true; // Keep listening or stop after a pause
+
+            const transcriptArea = document.querySelector('textarea[name="transcript"]');
+            const recordButton = document.getElementById("recordButton");
+            let isRecording = false;
+
+            recognition.addEventListener('result', event => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0])
+                    .map(result => result.transcript)
+                    .join('');
+
+                transcriptArea.value = transcript; // Update the textarea with the transcript
+            });
+
+            recordButton.addEventListener("click", () => {
+                if (!isRecording) {
+                    transcriptArea.value = ""
+                    recognition.start();
+                    isRecording = true;
+                    recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/stop.webp') }}')";
+                } else {
+                    recognition.stop();
+                    isRecording = false;
+                    recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/start.webp') }}')";
+                }
+            });
+
+            recognition.addEventListener('end', () => {
+                if (isRecording) {
+                    recognition.start(); // Restart recognition if still recording
+                } else {
+                    const transcriptText = transcriptArea.value;
+                    fetch('/save_transcript', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ transcript: transcriptText }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Success:', data);
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                }
+            });
+
+
+        } else {
+            console.error("Speech Recognition API is not supported in this browser.");
+        }
+
+    </script>
 
 </body>
+
 </html>
