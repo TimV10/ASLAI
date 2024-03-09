@@ -52,6 +52,27 @@
         input[type="submit"]:hover {
             background-color: #45a049;
         }
+.record-button {
+    cursor: pointer;
+    border: none;
+    background: url('button/start.jpeg') no-repeat center center;
+    width: 50px; /* Adjust based on your image size */
+    height: 50px; /* Adjust based on your image size */
+    background-size: contain; /* This ensures the image covers the button area without stretching */
+}
+
+
+.record-button:hover {
+    background-color: #45a049; /* Darker shade when hovered */
+}
+
+.recording {
+    background-color: #FF6347; /* Red color to indicate recording */
+}
+
+.recording:hover {
+    background-color: #FF4500; /* Darker red when hovered during recording */
+}
     </style>
 </head>
 <body>
@@ -67,8 +88,54 @@
     <div class="file-upload-wrapper">
         <input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="Upload" name="submit">
+<button type="button" id="recordButton" class="record-button"></button>
     </div>
 </form>
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+document.getElementById("recordButton").addEventListener("click", () => {
+    const recordButton = document.getElementById("recordButton");
+
+    if (!mediaRecorder || mediaRecorder.state === "inactive") {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                mediaRecorder.start();
+                recordButton.style.backgroundImage = "url('button/stop.jpeg')"; // Change to stop image
+            })
+            .catch(console.error);
+    } else if (mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append("fileToUpload", audioBlob, "recordedAudio.wav");
+            fetch("/upload", { method: "POST", body: formData })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    }
+                    throw new Error('Upload failed');
+                })
+                .then(result => {
+                    console.log('Success:', result);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        };
+        recordButton.style.backgroundImage = "url('button/start.jpeg')"; // Change back to start image
+        audioChunks = [];
+    }
+});
+
+</script>
 
 
 </body>
