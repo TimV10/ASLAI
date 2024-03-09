@@ -55,7 +55,7 @@
 .record-button {
     cursor: pointer;
     border: none;
-    background: url('../static/button/start.jpeg') no-repeat center center;
+    background: url('../static/button/start.webp') no-repeat center center;
     width: 50px; /* Adjust based on your image size */
     height: 50px; /* Adjust based on your image size */
     background-size: contain; /* This ensures the image covers the button area without stretching */
@@ -80,7 +80,12 @@
 <div class="left-section">
     <!-- Content for the left section goes here -->
     <p>Left section content...</p>
+<video width="320" height="240" controls autoplay muted>
+    <source src="{{ url_for('static', filename='signs/candy.mp4') }}" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
 </div>
+
 
 <form action="/upload" method="post" enctype="multipart/form-data">
     <p>Transcript:</p>
@@ -89,53 +94,72 @@
         <input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="Upload" name="submit">
 <button type="button" id="recordButton" class="record-button" data-start-img="{{ url_for('static', filename='button/start.jpeg') }}" data-stop-img="{{ url_for('static', filename='button/stop.jpeg') }}"></button>
-
     </div>
 </form>
 
 <script>
-    let mediaRecorder;
-    let audioChunks = [];
-document.getElementById("recordButton").addEventListener("click", () => {
-    const recordButton = document.getElementById("recordButton");
+    // Check for browser support
+    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (!mediaRecorder || mediaRecorder.state === "inactive") {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-                mediaRecorder.start();
-                recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/stop.jpeg') }}')";
-            })
-            .catch(console.error);
-    } else if (mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const formData = new FormData();
-            formData.append("fileToUpload", audioBlob, "recordedAudio.wav");
-            fetch("/upload", { method: "POST", body: formData })
-                .then(response => {
-                    if (response.ok) {
-                        return response.text();
-                    }
-                    throw new Error('Upload failed');
-                })
-                .then(result => {
-                    console.log('Success:', result);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        };
-        recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/start.jpeg') }}')";
-        audioChunks = [];
+    if (window.SpeechRecognition) {
+        let recognition = new SpeechRecognition();
+        recognition.lang = 'en-US'; // Set the language
+        recognition.interimResults = true; // Whether you want interim results
+        recognition.continuous = true; // Keep listening or stop after a pause
+
+        const transcriptArea = document.querySelector('textarea[name="transcript"]');
+        const recordButton = document.getElementById("recordButton");
+        let isRecording = false;
+
+        recognition.addEventListener('result', event => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('');
+
+            transcriptArea.value = transcript; // Update the textarea with the transcript
+        });
+
+        recordButton.addEventListener("click", () => {
+            if (!isRecording) {
+                transcriptArea.value = ""
+                recognition.start();
+                isRecording = true;
+                recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/stop.webp') }}')";
+            } else {
+                recognition.stop();
+                isRecording = false;
+                recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/start.webp') }}')";
+            }
+        });
+
+recognition.addEventListener('end', () => {
+    if (isRecording) {
+        recognition.start(); // Restart recognition if still recording
+    } else {
+        const transcriptText = transcriptArea.value;
+        fetch('/save_transcript', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ transcript: transcriptText }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
     }
 });
-</script>
 
+
+    } else {
+        console.error("Speech Recognition API is not supported in this browser.");
+    }
+</script>
 
 </body>
 </html>

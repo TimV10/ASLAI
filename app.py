@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request, redirect, url_for
+from flask import Flask, render_template, flash, request, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 import os
 import speech_recognition as sr
@@ -6,7 +6,8 @@ import speech_recognition as sr
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'SpeechToText/'
-ALLOWED_EXTENSIONS = {'wav', 'mp3', 'ogg'}  # Update allowed extensions based on your requirements
+ALLOWED_EXTENSIONS = {'wav', 'mp3', 'ogg', 'webm'}
+ # Update allowed extensions based on your requirements
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'your_secret_key'  # Set a secret key for flash messages
@@ -52,6 +53,24 @@ def upload_file():
         flash('Invalid file type.')
         return redirect(request.url)
 
+
+@app.route('/save_transcript', methods=['POST'])
+def save_transcript():
+    data = request.json
+    transcript = data.get('transcript')
+
+    if transcript:
+        # Define the file path, e.g., "transcripts/transcript.txt"
+        # Make sure the 'transcripts' folder exists or choose another location
+        file_path = os.path.join('transcripts', 'transcript.txt')
+
+        # Write the transcript to a text file
+        with open(file_path, 'w') as file:
+            file.write(transcript)
+
+        return jsonify({"message": "Transcript saved successfully."})
+
+    return jsonify({"error": "No transcript provided."}), 400
 
 @app.route('/')
 def index():
