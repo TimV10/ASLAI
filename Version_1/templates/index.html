@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improved UI</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .left-section,
+        form {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .left-section {
+            background-color: #f0f0f0;
+            /* Light grey background for contrast */
+        }
+
+        form {
+            background-color: #e6e6ff;
+            /* Light blue background for visual separation */
+            border-left: 2px solid #ccc;
+            /* Adds a subtle border between sections */
+        }
+
+        textarea {
+            width: 80%;
+            /* Increase the width */
+            height: 500px;
+            /* Increase the height */
+            margin-bottom: 20px;
+            /* Adds space below the textarea */
+        }
+
+        .file-upload-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            /* Space between file input and submit button */
+            margin-bottom: 20px;
+            /* Adds space below the file input and submit button */
+        }
+
+        input[type="file"] {
+            cursor: pointer;
+        }
+
+        input[type="submit"] {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .record-button {
+            cursor: pointer;
+            border: none;
+            background: url('../static/button/start.webp') no-repeat center center;
+            width: 50px;
+            /* Adjust based on your image size */
+            height: 50px;
+            /* Adjust based on your image size */
+            background-size: contain;
+            /* This ensures the image covers the button area without stretching */
+        }
+
+
+        .record-button:hover {
+            background-color: #45a049;
+            /* Darker shade when hovered */
+        }
+
+        .recording {
+            background-color: #FF6347;
+            /* Red color to indicate recording */
+        }
+
+        .recording:hover {
+            background-color: #FF4500;
+            /* Darker red when hovered during recording */
+        }
+    </style>
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</head>
+
+<body>
+
+    <div class="left-section">
+        <!-- Content for the left section goes here -->
+        <p>Left section content...</p>
+        <video  id="videoSource" width="320" height="240" src="{{ url_for('static', filename="signs/default.mp4") }}"  type="video/mp4" controls autoplay muted>
+            <!--<source src="{{ url_for('static', filename="signs/I.mp4") }}">-->
+                        Your browser does not support the video tag.
+        </video>
+    </div>
+
+
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <p>Transcript:</p>
+        <label id="database"></label>
+        <textarea name="transcript" id="transcriptId"   rows="4" cols="50">{{ recognized_text|default('', true) }}</textarea>
+        <div class="file-upload-wrapper">
+            <input type="file" name="fileToUpload" id="fileToUpload">
+            <input type="submit" value="Upload" name="submit">
+            <button type="button" id="recordButton" class="record-button"
+                data-start-img="{{ url_for('static', filename='button/start.jpeg') }}"
+                data-stop-img="{{ url_for('static', filename='button/stop.jpeg') }}"></button>
+        </div>
+    </form>
+
+    <script>
+        
+const data=[
+    {
+        "id": 1,
+        "video": "{{ url_for('static', filename='signs/candy.mp4') }}",
+        "definition": "candy",
+        "synonyms": "sweet,desserts,pudding"
+    },
+    {
+        "id": 2,
+        "video": "{{ url_for('static', filename='signs/dont.mp4') }}",
+        "definition": "Don't",
+        "synonyms": "Do not, avoid"
+    },
+    {
+        "id": 3,
+        "video": "{{ url_for('static', filename='signs/I.mp4') }}",
+        "definition": "I",
+        "synonyms": "me,myself"
+    },
+    {
+        "id": 4,
+        "video": "{{ url_for('static', filename='signs/eat.mp4') }}",
+        "definition": "eat",
+        "synonyms": "eat, consume, gobble"
+    },
+
+]
+function addVideosToPage(inputText) {
+
+
+const inputText1 = inputText;//
+//const inputText1 = document.getElementById("transcriptId");
+console.log("transcript text : "+inputText);
+const videoPaths = findVideoPaths(inputText);
+console.log(videoPaths); 
+var myvid = document.getElementById('videoSource');
+var myvids =[];
+videoPaths.forEach(videoPath => {
+    // Remove '/static' from videoPath
+    //videoPath = videoPath.replace('/static', '');
+
+    // Push the correctly formatted URL into the myvids array
+    //myvids.push("{{ url_for('static', filename='${videoPath}') }}");
+    myvids.push(videoPath);
+});
+
+    console.log('my vids: '+myvids);
+//var myvids = [
+//"{{ url_for('static', filename='signs/I.mp4') }}",
+//"{{ url_for('static', filename='signs/dont.mp4') }}",
+//"{{ url_for('static', filename='signs/eat.mp4') }}",
+//"{{ url_for('static', filename='signs/candy.mp4') }}"
+//]
+var activeVideo = 0;
+
+myvid.addEventListener('ended', function(e) {
+    // update the new active video index
+    if (myvids.length>1) {
+
+   
+    if (activeVideo<myvids.length-1) {
+        console.log("activeVideo before inc: " +activeVideo)
+        activeVideo = (++activeVideo) % myvids.length;
+        
+        //activeVideo = activeVideo +1;
+        console.log("activeVideo after nc: " +activeVideo)
+        // update the video source and play
+        myvid.src = myvids[activeVideo];
+        var playPromise = myvid.play();
+
+if (playPromise !== undefined) {
+  playPromise.then(_ => {
+    // Automatic playback started!
+    // Show playing UI.
+  })
+  .catch(error => {
+    // Auto-play was prevented
+    // Show paused UI.
+  });
+}
+    } else {
+       myvid.src = "{{ url_for('static', filename='signs/default.mp4') }}" ;
+       myvid.pause();
+
+    }
+} else {
+    myvid.src = "{{ url_for('static', filename='signs/default.mp4') }}" ;
+        myvid.pause();
+
+}
+
+  });
+}
+
+
+function findVideoPaths(inputText) {
+    const words = inputText.split(/\s+/); // Split input text into words
+    const videoPaths = [];
+
+    words.forEach(word => {
+        // Attempt to find a direct match with the 'definition' key
+        let match = data.find(item => item.definition.toLowerCase() === word.toLowerCase());
+
+        if (!match) {
+            // If no direct match, search in the 'synonyms'
+            match = data.find(item => {
+                const synonyms = item.synonyms.split(','); // Assuming synonyms are comma-separated
+                return synonyms.some(synonym => synonym.trim().toLowerCase() === word.toLowerCase());
+            });
+        }
+
+        if (match) {
+    //     document.getElementById("videoSource").src = "\"{{ url_for('static', filename=''"+match.video+") }}\"";
+     (document.getElementById("videoSource")).load();
+     (document.getElementById("videoSource")).play();
+            videoPaths.push(match.video); // Add the video path to the array if there's a match
+        }
+    });
+
+    return videoPaths;
+}
+        // Check for browser support
+        window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (window.SpeechRecognition) {
+            let recognition = new SpeechRecognition();
+            recognition.lang = 'en-US'; // Set the language
+            recognition.interimResults = true; // Whether you want interim results
+            recognition.continuous = true; // Keep listening or stop after a pause
+
+            const transcriptArea = document.querySelector('textarea[name="transcript"]');
+            const recordButton = document.getElementById("recordButton");
+            let isRecording = false;
+
+            recognition.addEventListener('result', event => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0])
+                    .map(result => result.transcript)
+                    .join('');
+
+                transcriptArea.value = transcript; // Update the textarea with the transcript
+            });
+
+            recordButton.addEventListener("click", () => {
+                if (!isRecording) {
+                    transcriptArea.value = ""
+                    recognition.start();
+                    isRecording = true;
+                    recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/stop.webp') }}')";
+                } else {
+                    recognition.stop();
+                    isRecording = false;
+                    recordButton.style.backgroundImage = "url('{{ url_for('static', filename='button/start.webp') }}')";
+                }
+            });
+
+            recognition.addEventListener('end', () => {
+                if (isRecording) {
+                    recognition.start(); // Restart recognition if still recording
+                } else {
+                    const transcriptText = transcriptArea.value;
+                    addVideosToPage(transcriptText);
+
+                    fetch('/save_transcript', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ transcript: transcriptText }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Success:', data);
+
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                }
+            });
+
+
+        } else {
+            console.error("Speech Recognition API is not supported in this browser.");
+        }
+
+    </script>
+
+</body>
+
+</html>

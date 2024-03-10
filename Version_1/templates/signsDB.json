@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "video": "path",
+        "definition": "Candy",
+        "synonyms": "sweet,deserts,pudding"
+    },
+    {
+        "id": 2,
+        "video": "path",
+        "definition": "Don't",
+        "synonyms": "Do not, avoid"
+    }
+]
