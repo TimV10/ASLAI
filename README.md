@@ -24,6 +24,7 @@ Navigate to `http://127.0.0.1:5000` in your web browser and follow the instructi
 - Speech-to-text conversion for accurate understanding and transcription of spoken language.
 - Translation of transcribed text into American Sign Language (ASL) representations.
 - Visual ASL translations provided through videos, images, or animations.
+- Please click on 'view raw' to access the demo video
 
 
 ## Dependencies
