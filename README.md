@@ -12,7 +12,7 @@ The web application translates spoken language into American Sign Language (ASL)
 - [License](#license)
 
 ## Installation
-1. Clone the repository.
+1. Clone the repository.(https://github.com/TimV10/ASLAI.git)
 2. Install the required dependencies: `pip install -r requirements.txt`
 3. Start the Flask server by running `app.py`.
 
